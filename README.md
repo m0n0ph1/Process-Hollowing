@@ -7,7 +7,6 @@ As Quoted from John Leitch's [PDF](http://www.autosectools.com/process-hollowing
 #Resources
 
 Process Hollowing Source
-
 http://code.google.com/p/process-hollowing/downloads/list
  
 Malware Analyst's Cookbook and DVD: Tools and Techniques for Fighting Malicious Code
@@ -37,7 +36,7 @@ http://msdn.microsoft.com/en-us/library/yszfawxh(v=vs.80).aspx
 
 #Credits
 
-All Credits for this repository go to John Leitch, for his awesome explanation and sourcecode examples (john@autosectools.com)
+All Credits for this repository go to John Leitch, for his awesome explanation and sourcecode examples
 
 See Website for more details: http://www.autosectools.com
 
