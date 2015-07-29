@@ -244,4 +244,3 @@ DWORD FindRemotePEB(HANDLE hProcess);
 PEB* ReadRemotePEB(HANDLE hProcess);
 
 PLOADED_IMAGE ReadRemoteImage(HANDLE hProcess, LPCVOID lpImageBaseAddress);
-
