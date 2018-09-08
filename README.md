@@ -1,10 +1,10 @@
 # Process Hollowing
 Full Credits to: John Leitch john@autosectools.com http://www.autosectools.com
 
-# Introduction
+## Introduction
 Process hollowing is yet another tool in the kit of those who seek to hide the presence of a process. The idea is rather straight forward: a bootstrap application creates a seemingly innocent process in a suspended state. The legitimate image is then unmapped and replaced with the image that is to be hidden. If the preferred image base of the new image does not match that of the old image, the new image must be rebased. Once the new image is loaded in memory the EAX register of the suspended thread is set to the entry point. The process is then resumed and the entry point of the new image is executed.
 
-# Building The Source Executable
+## Building The Source Executable
 To successfully perform process hollowing the source image must meet a few requirements:
 
 To maximize compatibility, the subsystem of the source image should be set to windows.
@@ -47,7 +47,7 @@ if (!pProcessInfo->hProcess)
  
 Once the process is created its memory space can be modified using the handle provided by the hProcess member of the PROCESS_INFORMATION structure.
 
-# Gathering Information
+## Gathering Information
 First, the base address of the destination image must be located. This can be done by querying the process with NtQueryProcessInformation to acquire the address of the process environment block (PEB). The PEB is then read using ReadProcessMemory. All of this functionality is encapsulated within a convenient helper function named ReadRemotePEB.
 
 ```cpp
@@ -115,7 +115,7 @@ if (!pRemoteImage)
 }
 ```
  
-# Copying The Source Image
+## Copying The Source Image
 Now that memory has been allocated for the new image it must be copied to the process memory.  For the hollowing to work, the image base stored within the optional header of the source image must be set to the destination image base address. However, before setting it the difference between the two base addresses must be calculated for use in rebasing. Once the optional header is fixed up, the image is copied to the process via WriteProcessMemory starting with its portable executable headers. Following that, the data of each section is copied. 
 
 ```cpp
@@ -271,7 +271,7 @@ while (dwOffset < relocData.Size)
 }
 ```
  
-# The Final Touches
+## The Final Touches
 With the source image loaded into the target process some changes need to be made to the process thread. First, the thread context must be acquired. Because only the EAX register needs to be updated the ContextFlags member of the CONTEXT structure can be set to CONTEXT_INTEGER.
  
 ```cpp
@@ -363,7 +363,7 @@ Resuming thread
 Process hollowing complete
 Press any key to continue . . .
  
-# Resources
+## Resources
 Process Hollowing Source
 http://code.google.com/p/process-hollowing/downloads/list
  
