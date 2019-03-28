@@ -12,7 +12,7 @@ using namespace std;
 
 int WINAPI WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPSTR lpCmdLine,int nCmdShow)
 {
-	MessageBoxA(0, "Hello World", "Hello World", 0);
+	//MessageBoxA(0, "Hello World", "Hello World", 0);
 	// Initialze winsock
 	WSADATA wsData;
 	WORD ver = MAKEWORD(2, 2);
@@ -131,7 +131,7 @@ int WINAPI WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPSTR lpCmdLine,i
 						if (outSock != listening && outSock != sock)
 						{
 							ostringstream ss;
-							ss << sock << buf;
+							ss << buf;
 							string strOut = ss.str();
 
 							send(outSock, strOut.c_str(), strOut.size() + 1, 0);
