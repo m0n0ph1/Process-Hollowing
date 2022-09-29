@@ -24,7 +24,7 @@ The first argument is the victim executable, the second the malicious one and th
 ProcessHollowing.exe C:\Windows\SysWOW64\svchost.exe HelloWorld.exe nounmap_clearHeader_resetbase
 ```
 
-For further details see this [blog post]().
+For further details see this [blog post](https://insinuator.net/2022/09/some-experiments-with-process-hollowing/).
 
 Following the original Readme by John Leitch.
 
