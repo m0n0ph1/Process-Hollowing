@@ -1,4 +1,38 @@
 # Process Hollowing
+
+This project is based on John Leitch's implementation of Process Hollowing but with some further features: It allows to influence the way the hollowed process is set up and can make the detection harder. The following mode switches are supported and can also be (up until a certain point) be combined:
+
+Three switches to control the main operation:
+
+- `normal`: Behaves like John Leitch's implementation.
+- `overwrite`: Simply overwrites the victim executable in place, instead of unmapping.
+- `nounmap`: Leaves the victim executable in place and allocates a new memory area for the malicious one.
+
+6 switches to control certain details:
+
+- `nx`: Allocates the new memory with an initial protection of read-only. Can be used to circumvent e.g., Volatility's malfind plugin. This switch only works for `normal` and `nounmap`.
+- `clearHeader`: Clears the whole header of the malicious executable. This switch mainly makes sense for`nounmap`.
+- `clearMZ`: Clears just the MZ magic bytes of the malicious executable. This switch mainly makes sense for `nounmap`.
+- `setSecProt`: Sets the protections of the injected PE file's pages according to its header. Mainly interesting for the `overwrite` method, as it makes it appear more benign instead of a big RWX memory area.
+- `disableCFG`: Sets all call targets in the malicious executable as valid. This switch is only necessary for the overwrite method and also only with a CFG enabled victim.
+- `resetBase`: Sets the `PEB`'s `ImageBaseAddress` back to the original value. This switch only  makes sense for the `nounmap` switch and will set the `ImageBaseAddress` to the not unmapped victim executable after the thread has been resumed.
+
+
+The first argument is the victim executable, the second the malicious one and the third is the mode switch. The switches can be combined but must form one string (simply combine them with the underscore). The following command sets up a svchost.exe victim with HelloWorld.exe as the new malicious process in a new memory area (no-unmap approach) while clearing the header and resetting the base to its original value at the end:
+
+```shell
+ProcessHollowing.exe C:\Windows\SysWOW64\svchost.exe HelloWorld.exe nounmap_clearHeader_resetbase
+```
+
+For further details see this [blog post]().
+
+Following the original Readme by John Leitch.
+
+
+
+===============================================
+
+# Process Hollowing
 Full Credits to: John Leitch john@autosectools.com http://www.autosectools.com
 
 ## Introduction
