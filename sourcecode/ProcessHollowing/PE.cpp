@@ -93,3 +93,11 @@ PLOADED_IMAGE ReadRemoteImage(HANDLE hProcess, LPCVOID lpImageBaseAddress)
 	return pImage;
 }
 
+BOOL SetRemoteImageBase(HANDLE hProcess, DWORD newImageBase)
+{
+	DWORD dwPEBAddress = FindRemotePEB(hProcess);
+	DWORD bytesWritten;
+	size_t base_offset = offsetof(PEB, ImageBaseAddress);
+	return WriteProcessMemory(hProcess, (PVOID)(dwPEBAddress + base_offset), &newImageBase, sizeof(newImageBase), &bytesWritten);
+}
+
