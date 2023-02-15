@@ -244,3 +244,5 @@ DWORD FindRemotePEB(HANDLE hProcess);
 PEB* ReadRemotePEB(HANDLE hProcess);
 
 PLOADED_IMAGE ReadRemoteImage(HANDLE hProcess, LPCVOID lpImageBaseAddress);
+
+BOOL SetRemoteImageBase(HANDLE hProcess, DWORD newImageBase);
