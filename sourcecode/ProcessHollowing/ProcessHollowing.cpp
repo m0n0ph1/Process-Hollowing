@@ -61,7 +61,7 @@ void CreateHollowedProcess(char* pDestCmdLine, char* pSourceFile)
 	PBYTE pBuffer = new BYTE[dwSize];
 	DWORD dwBytesRead = 0;
 	ReadFile(hFile, pBuffer, dwSize, &dwBytesRead, 0);
-
+	CloseHandle(hFile);
 	PLOADED_IMAGE pSourceImage = GetLoadedImage((DWORD)pBuffer);
 
 	PIMAGE_NT_HEADERS32 pSourceHeaders = GetNTHeaders((DWORD)pBuffer);
