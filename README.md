@@ -365,7 +365,7 @@ Press any key to continue . . .
  
 ## Resources
 Process Hollowing Source
-[http://code.google.com/p/process-hollowing/downloads/list](https://github.com/m0n0ph1/Process-Hollowing/)
+https://github.com/m0n0ph1/Process-Hollowing/
  
 Malware Analyst's Cookbook and DVD: Tools and Techniques for Fighting Malicious Code
 http://www.amazon.com/Malware-Analysts-Cookbook-DVD-Techniques/dp/0470613033
