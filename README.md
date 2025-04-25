@@ -388,6 +388,4 @@ http://msdn.microsoft.com/en-us/library/bb384887.aspx
 C Bit Fields
 http://msdn.microsoft.com/en-us/library/yszfawxh(v=vs.80).aspx
 
-# Process Hollowing
-Full Credits to: John Leitch john@autosectools.com http://www.autosectools.com
 
